@@ -61,39 +61,9 @@ func _ready() -> void:
 	
 	while Global.ending == 0:
 		if current_turn == 0:
-			match current_action:
-				1:
-					await player_attack()
-					print("Player QTE: ",Global.player_qte)
-					print("Player Damage: ",dmg,"\n")
-					
-					if $FightHUD/DragonHP.value == 0:
-						await dragon_death()
-						continue
-					
-					current_turn = 1
-					current_action = 0
-				2:
-					await player_item()
-					current_turn = 1
-					current_action = 0
-				3:
-					print("Player RunAway: ",chance)
-					await player_runaway()
-					
-					if chance >= 17:
-						Global.ending = 1
-						break
-					
-					current_turn = 1
-					current_action = 0
-				4:
-					await verify_current_effects()
-					remove_child(fight_dialogue)
-					$FightHUD.add_child(buttons)
-					fight_button.grab_focus()
-					current_action = 0
-		
+			await player_turn()
+			if Global.ending == 1: break
+			
 		elif current_turn == 1:
 			await dragon_attack()
 			
@@ -125,6 +95,40 @@ func _process(_delta: float) -> void:
 
 func change_scene():
 	get_tree().change_scene_to_file("res://scenes/aftermath.tscn")
+
+func player_turn():
+	match current_action:
+		1:
+			await player_attack()
+			print("Player QTE: ",Global.player_qte)
+			print("Player Damage: ",dmg,"\n")
+			
+			if $FightHUD/DragonHP.value == 0:
+				await dragon_death()
+				return
+			
+			current_turn = 1
+			current_action = 0
+		2:
+			await player_item()
+			current_turn = 1
+			current_action = 0
+		3:
+			print("Player RunAway: ",chance)
+			await player_runaway()
+			
+			if chance >= 17:
+				Global.ending = 1
+				return
+			
+			current_turn = 1
+			current_action = 0
+		4:
+			await verify_current_effects()
+			remove_child(fight_dialogue)
+			$FightHUD.add_child(buttons)
+			fight_button.grab_focus()
+			current_action = 0
 
 func player_attack():
 	await fight_qte.player_attacked
